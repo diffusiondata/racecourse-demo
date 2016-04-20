@@ -1,0 +1,117 @@
+ <!-- Copyright (C) 2016 Push Technology Ltd.                                 
+                                       
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ 
+ -->
+ <html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+    </style>
+	<script type="text/javascript" src="./diffusion-js-5.7.0.js"></script>
+	<script type="text/javascript"
+         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyATmWCtYbfXZ3ysBLUj4PjJYD5g-F5z_AU&sensor=true">
+</script>
+<script>
+	  var horses = new Array();
+	  var numberOfHorses = 0;
+	  
+	  // The data origin point at Lingfield race track
+	  var dataOriginLong = -0.007529;
+	  var dataOriginLat  = 51.170009;
+	  
+	  // Multiplier used to better fit the data to the Google map...
+	  var cosmologicalConstant = 1.01;
+	  
+	  // Diffusion credentials and topic
+	  var diffusionUser = "admin";
+	  var diffusionPassword = "password";
+	  var diffusionTopic = "horsedata";
+	  
+
+      var map;
+
+      function initialize() {
+        var mapOptions = {
+          center: new google.maps.LatLng(dataOriginLat, dataOriginLong),
+          zoom: 16,
+		  mapTypeId: google.maps.MapTypeId.SATELLITE
+        };
+        map = new google.maps.Map(document.getElementById("map-canvas"),
+            mapOptions);
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+	 
+	 // Connect to the Diffusion server
+	diffusion.connect({
+		host   : 'localhost',
+		port   : 8080,
+		secure : false,
+		principal : diffusionUser,
+		credentials : diffusionPassword
+	}).then(function(session) {
+		// Connection established
+		var datatype = diffusion.datatypes.json();
+		session.subscribe(diffusionTopic).asType(datatype).on({
+			subscribe : function(topic) {
+				// Subscribed to a particular topic
+			},
+			unsubscribe : function(topic, reason) {
+				// Unsubscribed from a particular topic
+			},
+			value : function(topic, specification, newValue, oldValue) {
+				// Get the JSON object and plot it on the race course
+				var jsObj = newValue.get();
+				
+				// Convert the x and y position to absolute longitude and latitude from data origin. The identifier
+				// of the horse is the last two digits of the I field.
+				var horseId = parseInt(jsObj.I.substr(-2));
+				var horseX = jsObj.X * cosmologicalConstant; 
+				var horseY = jsObj.Y * cosmologicalConstant;
+				var radiusEarth = 6378137; // In meters
+				var horseLatitude  = dataOriginLat  + ( horseY / radiusEarth) * (180 / Math.PI);
+				var horseLongitude = dataOriginLong + ( horseX / radiusEarth) * (180 / Math.PI) / Math.cos(dataOriginLat * Math.PI/180);
+				
+				// Place a marker for the horse on the map at the new location, creating a new one on the fly if it does not already exist
+				if( horseId > numberOfHorses) {
+						// Ignore the first value as it will be the current state of the topic, namely the last position
+						// of the last horse in the last race.
+						if(oldValue != null) {
+						// Create the new marker and append it to the array
+						var image = "icons/horse" + horseId + ".png";
+						var marker = new google.maps.Marker({
+							position: new google.maps.LatLng(horseLatitude, horseLongitude),
+							map: map,
+							icon : image
+						});
+						horses[horseId - 1] = marker;
+						numberOfHorses = numberOfHorses + 1;
+					}
+				}
+				else {
+					// We already had a marker for this horse, so move it...
+					horses[horseId - 1].setMap(null);
+					horses[horseId - 1].setPosition(new google.maps.LatLng(horseLatitude, horseLongitude));
+					horses[horseId - 1].setMap(map);
+				}
+			}
+		});
+	});
+</script>
+</head>
+<body>
+<div id="map-canvas"></div>
+</body>
+</html>
