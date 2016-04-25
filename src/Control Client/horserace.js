@@ -32,12 +32,12 @@ var delay             = 15; // Delay between sending out each row of data in ms
 function connectToDiffusion() {
 	console.log("Connecting to Diffusion...");
     diffusion.connect({
-    principal : diffusionUser,
-    credentials : diffusionPassword,
-    host : diffusionHost,
-    port : diffusionPort,
-    secure : false, 
-       }).then(onConnectSuccess, onConnectError);
+        principal : diffusionUser,
+        credentials : diffusionPassword,
+        host : diffusionHost,
+        port : diffusionPort,
+        secure : false, 
+    }).then(onConnectSuccess, onConnectError);
 
     function onConnectSuccess(session) {
         console.log('Connected!');
@@ -59,17 +59,16 @@ function connectToDiffusion() {
         });
 
 		// Create the JSON topic
-		var value = diffusion.datatypes.json().from({ "hello" : "world" });
-		session.topics.add(diffusionTopic, value).then(
-           function(result) {
-              console.log('JSON Topic Added : ' + result.topic);
+		session.topics.add(diffusionTopic, diffusion.topics.TopicType.JSON).then(
+            function(result) {
+                console.log('JSON Topic Added : ' + result.topic);
 			  
-			  // Start the updates to the topic
-              updateTopic(session);
-           },
-           function(error) {
-              console.log('JSON Topic Add Failed : ' + error);
-        });
+                // Start the updates to the topic
+                updateTopic(session);
+            },
+            function(error) {
+                console.log('JSON Topic Add Failed : ' + error);
+            });
     }
 
 
@@ -79,44 +78,36 @@ function connectToDiffusion() {
 } 
 
 function updateTopic(session) {
-   // Create content from the JSON data
-   var json = JSON.parse(horseData[fileRowNum]);
-   var content = diffusion.datatypes.json().from(json);
+    // Create content from the JSON data
+    var json = JSON.parse(horseData[fileRowNum]);
+    var content = diffusion.datatypes.json().from(json);
 
-   // Update the topic with the content
-   session.topics.update(diffusionTopic, content).then(onComplete, onError);
-   fileRowNum = fileRowNum + 1;
-   if (fileRowNum == horseData.length-1)
-      fileRowNum = 0;
+    // Update the topic with the content
+    session.topics.update(diffusionTopic, content).then(onComplete, onError);
+    fileRowNum = fileRowNum + 1;
+    if (fileRowNum == horseData.length-1)
+        fileRowNum = 0;
 
-   // Delay until the next record is published
-   setTimeout(function(){updateTopic(session)}, delay);
+    // Delay until the next record is published
+    setTimeout(function(){updateTopic(session)}, delay);
 
-   function onComplete(error) {
-   }
+    function onComplete(status) {
+    }
 
-   function onError(error) {
-      console.log("onError!" + error);
-   }
+    function onError(error) {
+        console.log("onError!" + error);
+    }
 }
 
-
-function importAndPublishData() {
-	var dataImported = importHorseData();
-	  console.log("File read."); 
-}
-
-function importHorseData() {
-   fs.readFile(dataFileName, function (err, data) {
-     if (err) {
-       console.log("Failed to open file: " + err);
-	   return false;
-     }
+function importHorseDataAndPublish() {
+    fs.readFile(dataFileName, function (err, data) {
+        if (err) {
+            console.log("Failed to open file: " + err);
+        }
 	 
-     horseData = data.toString().split('\r\n');
-	 connectToDiffusion();
-	 return true;
-});
+        horseData = data.toString().split('\r\n');
+        connectToDiffusion();
+    });
 }
 
-importAndPublishData();
+importHorseDataAndPublish();

@@ -1,0 +1,14 @@
+{
+  "name": "push-racecourse-demo",
+  "version": "1.0.0",
+  "description": "The Reappt and Diffusion Control Client for the Race Course Demonstration",
+  "main": "horserace.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Push Technology Ltd.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "diffusion": "^5.7.1"
+  }
+}
