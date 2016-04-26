@@ -78,15 +78,13 @@ function connectToDiffusion() {
 } 
 
 function updateTopic(session) {
-    // Create content from the JSON data
+    // Update the topic with the data from the current row
     var json = JSON.parse(horseData[fileRowNum]);
-    var content = diffusion.datatypes.json().from(json);
-
-    // Update the topic with the content
-    session.topics.update(diffusionTopic, content).then(onComplete, onError);
+    session.topics.update(diffusionTopic, json).then(onComplete, onError);
     fileRowNum = fileRowNum + 1;
-    if (fileRowNum == horseData.length-1)
+    if (fileRowNum == horseData.length-1) {
         fileRowNum = 0;
+    }
 
     // Delay until the next record is published
     setTimeout(function(){updateTopic(session)}, delay);

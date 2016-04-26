@@ -24,7 +24,7 @@
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyATmWCtYbfXZ3ysBLUj4PjJYD5g-F5z_AU&sensor=true">
 </script>
 <script>
-	var horses = new Array();
+	var horses = [];
 	var numberOfHorses = 0;
 	  
 	// The data origin point at Lingfield race track
@@ -75,7 +75,7 @@
 				
 				// Convert the x and y position to absolute longitude and latitude from data origin. The identifier
 				// of the horse is the last two digits of the I field.
-				var horseId = parseInt(jsObj.I.substr(-2));
+				var horseId = parseInt(jsObj.I.substr(-2), 10);
 				var horseX = jsObj.X * cosmologicalConstant; 
 				var horseY = jsObj.Y * cosmologicalConstant;
 				var radiusEarth = 6378137; // In meters
