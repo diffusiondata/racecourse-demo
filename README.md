@@ -26,7 +26,7 @@ Instructions
 
 4. Install the Diffusion JS client via npm, in a command prompt or shell:
 	- cd src/Control Client
-	- npm install
+	- npm install diffusion
 
 5. Start the Control Client
 	- node horserace.js
