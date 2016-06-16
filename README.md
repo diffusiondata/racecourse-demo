@@ -15,7 +15,7 @@ Instructions
 
 1. Install and start Diffusion or start a Reappt instance:
 	- download.pushtechnology.com
-	- http://reapt.io
+	- https://reappt.io
 
 2. Edit src/Client/racecourseclient.html
 	- Replace the Google Maps key in line 24 by your own, keys are free and can be obtained from https://developers.google.com/maps/documentation/javascript/get-api-key#get-an-api-key
